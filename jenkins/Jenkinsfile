@@ -2,13 +2,13 @@ pipeline {
     agent any
 
     tools {
-        maven 'Maven-3.9'
+        maven 'Maven-3.9'   // TEM que bater com o nome no Jenkins
     }
 
     stages {
-        stage('Build') {
+        stage('Test') {
             steps {
-                bat 'mvn -B clean package'
+                bat 'mvn -B test'
             }
         }
     }
