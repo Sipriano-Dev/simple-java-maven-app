@@ -2,14 +2,63 @@ pipeline {
     agent any
 
     tools {
-        maven 'Maven-3.9'   // TEM que bater com o nome no Jenkins
+        maven 'Maven-3.9'   // nome EXATO configurado no Jenkins
+    }
+
+    environment {
+        APP_NAME = 'simple-java-maven-app'
+        BUILD_DIR = 'target'
     }
 
     stages {
+
+        stage('Checkout') {
+            steps {
+                echo 'Obtendo código do repositório'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                bat 'mvn -B clean compile'
+            }
+        }
+
         stage('Test') {
             steps {
                 bat 'mvn -B test'
             }
+        }
+
+        stage('Package') {
+            steps {
+                bat 'mvn -B package -DskipTests'
+            }
+        }
+
+        stage('Delivery (Prepare Artifact)') {
+            steps {
+                echo 'Preparando artefato para entrega'
+                bat '''
+                if not exist delivery mkdir delivery
+                copy %BUILD_DIR%\\*.jar delivery\\
+                '''
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'Coletando relatórios de teste'
+            junit 'target/surefire-reports/*.xml'
+        }
+
+        success {
+            echo 'Pipeline executada com sucesso — artefato pronto para deploy'
+        }
+
+        failure {
+            echo 'Pipeline falhou — entrega bloqueada'
         }
     }
 }
